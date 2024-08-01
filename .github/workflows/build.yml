@@ -1,0 +1,73 @@
+name: OneLauncher build
+
+on:
+    push:
+    pull_request:
+
+jobs:
+    linux-build:
+        name: Build OneLauncher on Linux
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: "20.15"
+                cache: "pnpm"
+            - name: Prepare workspace
+              run: ../packages/scripts/setup.sh
+            - name: Install dependencies
+              run: pnpm i
+            - name: Prepare build
+              run: pnpm prep
+            - name: Upload build
+              uses: actions/upload-artifact@v4
+              with:
+                path: # Need path inserted here
+                name: OneLauncher Linux build
+    macos-build:
+        name: Build OneLauncher on MacOS
+        runs-on: macos-latest
+        steps:
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: "20.15.0"
+                cache: "pnpm"
+            - name: Prepare workspace
+              run: ../packages/scripts/setup.sh
+            - name: Install dependencies
+              run: pnpm i
+            - name: Prepare build
+              run: pnpm prep
+            - name: Upload build
+              uses: actions/upload-artifact@v4
+              with:
+                path: # Need path inserted here
+                name: OneLauncher Mac build
+    windows-build:
+        name: Build OneLauncher on Windows
+        runs-on: windows-latest
+        steps:
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v5
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: "20.15"
+                cache: "pnpm"
+            - name: Prepare workspace
+              run: ../packages/scripts/setup.ps1
+            - name: Install dependencies
+              run: pnpm i
+            - name: Prepare build
+              run: pnpm prep
+            - name: Upload build
+              uses: actions/upload-artifact@v4
+              with:
+                path: # Need path inserted here
+                name: OneLauncher Windows build
