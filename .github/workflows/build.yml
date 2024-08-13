@@ -108,12 +108,24 @@ jobs:
         settings:
           - host: macos-13
             target: x86_64-apple-darwin
+            bundles: app,dmg
+            os: darwin
+            arch: x86_64
           - host: macos-14
             target: aarch64-apple-darwin
+            bundles: app,dmg
+            os: darwin
+            arch: aarch64
           - host: windows-latest
             target: x86_64-pc-windows-msvc
+            bundles: msi
+            os: windows
+            arch: x86_64
           - host: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
+            bundles: deb
+            os: linux
+            arch: x86_64
     runs-on: ${{ matrix.settings.host }}
     name: Clippy (${{ matrix.settings.host }})
     timeout-minutes: 45
@@ -175,3 +187,31 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           clippy_flags: --workspace --all-features --locked
           fail_on_error: true
+
+      - name: Build
+        run: pnpm desktop build --ci -v --target ${{ matrix.settings.target }} --bundles ${{ matrix.settings.bundles }},updater
+        # env:
+        # TAURI_SIGNING_PRIVATE_KEY: $ {{ secrets.TAURI_PRIVATE_KEY }}
+        # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: $ {{ secrets.TAURI_KEY_PASSWORD }}
+        # ENABLE_CODE_SIGNING: $ {{ secrets.APPLE_CERTIFICATE }}
+        # APPLE_CERTIFICATE: $ {{ secrets.APPLE_CERTIFICATE }}
+        # APPLE_CERTIFICATE_PASSWORD: $ {{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        # APPLE_SIGNING_IDENTITY: $ {{ secrets.APPLE_SIGNING_IDENTITY }}
+        # APPLE_PROVIDER_SHORT_NAME: $ {{ secrets.APPLE_PROVIDER_SHORT_NAME }}
+        # APPLE_API_ISSUER: $ {{ secrets.APPLE_API_ISSUER }}
+        # APPLE_API_KEY: $ {{ secrets.APPLE_API_KEY }}
+        # SENTRY_AUTH_TOKEN: $ {{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: (Linux) Build Frontend
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          set -eux
+          XZ_OPT='-T0 -7' tar -cJf apps/frontend/dist.tar.xz -C apps/frontend/dist .
+
+      - name: Upload Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: OneLauncher Desktop Build ${{ matrix.settings.host }}
+          path: dist/*
+
+      #- name: Upload Linux Frontend
